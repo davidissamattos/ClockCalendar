@@ -1,0 +1,61 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#000000"
+    android:baselineAligned="false">
+
+    <!-- android:format24Hour="kk:mm:ss" -->
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3.5"
+            android:gravity="center_vertical|center_horizontal">
+
+            <TextClock
+                android:id="@+id/digital_clock"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:textSize="280sp"
+                android:textColor="#ffffff"
+                android:layout_weight="10"
+                android:format24Hour="kk:mm"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/date_clock"
+                android:textColor="#ffffff"
+                tools:text="09 Novembro, 2015"
+                android:textSize="30sp"
+                android:gravity="center_horizontal|top" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/calendarFragmentID"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2" />
+    </LinearLayout>
+
+
+
+    <FrameLayout
+        android:id="@+id/weatherFragmentID"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:padding="4dp"
+        android:layout_gravity="center" />
+
+</LinearLayout>
