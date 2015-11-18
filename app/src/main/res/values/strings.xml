@@ -1,9 +1,8 @@
 <resources>
-
-    <string name="app_name">ClockCalendar</string>
+    <string name="app_name">Smart Wall Clock</string>
     <string name="nextEvent_InitalMessage">Sua próxima atividade é: </string>
     <string name="hour_preposition"> às </string>
-    <string name="noEvent_Message">Você não tem nenhuma atividade nas próximas 24h.</string>
+    <string name="noEvent_Message">Você não tem nenhuma outra atividade hoje.</string>
     <string name="allDay_InitialMessage">Atividade de dia todo: </string>
     <string name="no_allDay_InitialMessage">Você não tem nenhuma atividade de dia todo.</string>
     <string name="no_information">--</string>

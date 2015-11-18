@@ -37,7 +37,7 @@
                 android:id="@+id/date_clock"
                 android:textColor="#ffffff"
                 tools:text="09 Novembro, 2015"
-                android:textSize="30sp"
+                android:textSize="40sp"
                 android:gravity="center_horizontal|top" />
         </LinearLayout>
 

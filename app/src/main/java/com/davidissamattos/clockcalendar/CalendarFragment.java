@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 /**
  * Created by David on 05/11/15.
@@ -46,6 +48,12 @@ public class CalendarFragment extends Fragment {
         super.onCreate(savedInstanceState);
         //Load any other stuff
 
+    }
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        //stopRepeatingTask();
     }
 
     @Override
@@ -194,28 +202,35 @@ public class CalendarFragment extends Fragment {
             Calendar now = Calendar.getInstance();
             long nowMillis = now.getTimeInMillis();
 
+            //Getting GMT offset for the all day events
+            //TimeZone timeZone = TimeZone.getDefault();
+            long offset = now.get(Calendar.ZONE_OFFSET) +
+                now.get(Calendar.DST_OFFSET);
+            Log.d(TAG,"Offset:" + Long.toString(offset));
+
             //Getting Today
             Calendar today = Calendar.getInstance();
             today.set(Calendar.HOUR_OF_DAY, 0);
             today.set(Calendar.MINUTE, 0);
-            today.set(Calendar.SECOND, 0);
+            today.set(Calendar.SECOND, 1);
             today.set(Calendar.MILLISECOND, 0);
+
             long todayMillis = today.getTimeInMillis();
 
-            //Date now = new Date(todayMillis);
-            //Log.d(TAG, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(now));
+
 
             //Getting tomorrow
             Calendar tomorrow = Calendar.getInstance();
-            tomorrow.add(Calendar.DATE, 1);
-            tomorrow.set(Calendar.HOUR_OF_DAY, 0);
-            tomorrow.set(Calendar.MINUTE, 0);
-            tomorrow.set(Calendar.SECOND, 0);
+            tomorrow.set(Calendar.HOUR_OF_DAY, 23);
+            tomorrow.set(Calendar.MINUTE, 59);
+            tomorrow.set(Calendar.SECOND, 59);
             tomorrow.set(Calendar.MILLISECOND, 0);
             long tomorrowMillis = tomorrow.getTimeInMillis();
 
+            Log.d(TAG, "Today millis: " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(todayMillis)));
+            Log.d(TAG, "Tomorrow millis: " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(tomorrowMillis)));
             //If needed can be used selection an selection args
-            setupCalendar(null,null,todayMillis,tomorrowMillis);
+            setupCalendar(null, null, todayMillis, tomorrowMillis);
             if (mCursor != null)
             {
                 //go to the first position
@@ -229,23 +244,25 @@ public class CalendarFragment extends Fragment {
                 //Events
                 if (numberOfEvents > 0)
                 {
-                    Log.d(TAG, Long.toString(todayMillis));
                     //See if there is an all day event
                     mCursor.moveToFirst();
                     for (int i = 0; i < numberOfEvents; i++)
                     {
-                        Log.d(TAG, "All: " + mCursor.getString(PROJECTION_ALL_DAY_INDEX) + " - " + mCursor.getString(PROJECTION_TITLE_INDEX) + " --> " + mCursor.getString(PROJECTION_BEGIN_INDEX));
+                        Log.d(TAG, mCursor.getString(PROJECTION_TITLE_INDEX));
                         boolean allDay = mCursor.getString(PROJECTION_ALL_DAY_INDEX).equals("1");
                         if (allDay)
                         {
-                            allDayEvent.add(i);
-                            //Log.d(TAG,"All day: " + mCursor.getString(PROJECTION_TITLE_INDEX));
+                            //To correct the events that take all day appearing in the day before
+                            long startAlldayTimeMillis = (mCursor.getLong(PROJECTION_BEGIN_INDEX))-offset;
+                            if (startAlldayTimeMillis <= tomorrowMillis)
+                                allDayEvent.add(i);
                         }
                         else
                         {
                             if ((mCursor.getLong(PROJECTION_BEGIN_INDEX)) > (nowMillis))
                             {
                                 nextEvent.add(i);
+                                //Log.d(TAG, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(mCursor.getLong(PROJECTION_BEGIN_INDEX))));
                             }
                         }
                         mCursor.moveToNext();
@@ -257,8 +274,8 @@ public class CalendarFragment extends Fragment {
                         //primeiro elemento
                         allDayEventIndex = allDayEvent.get(0);
                         mCursor.moveToPosition(allDayEventIndex);
-                        allDayEvent_TITLE = mCursor.getString(allDayEventIndex);
-                        allDayEvent_LOCATION = mCursor.getString(allDayEventIndex);
+                        allDayEvent_TITLE = mCursor.getString(PROJECTION_TITLE_INDEX);
+                        allDayEvent_LOCATION = mCursor.getString(PROJECTION_EVENT_LOCATION_INDEX);
                         numberOfAllDayEvents = allDayEvent.size();
                     }
                     else
@@ -322,6 +339,8 @@ public class CalendarFragment extends Fragment {
 
             if (mCalendarEvents.numberOfAllDayEvents > 0)
             {
+                Log.d(TAG,mCalendarEvents.allDayInitialString
+                        + mCalendarEvents.allDayEvent_TITLE);
                 mAllDayTextView.setText(mCalendarEvents.allDayInitialString
                         + mCalendarEvents.allDayEvent_TITLE);
             }

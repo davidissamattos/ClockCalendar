@@ -26,6 +26,29 @@ public class ClockActivity extends FragmentActivity {
     private TextClock mClock;
     private TextView mDate;
 
+    //Setting up the timer
+    private int mInterval = 2*60*1000; // 2 min by default, can be changed later
+    private Handler mHandler;
+
+    Runnable mFetchData = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            //Function to run
+            updateDateTextView();
+            //Re-schedule
+            mHandler.postDelayed(mFetchData, mInterval);
+        }
+    };
+    void startRepeatingTask()
+    {
+        mFetchData.run();
+    }
+    void stopRepeatingTask()
+    {
+        mHandler.removeCallbacks(mFetchData);
+    }
 
 
     protected void onCreate(Bundle savedInstanceState)
@@ -79,7 +102,7 @@ public class ClockActivity extends FragmentActivity {
 
     private void updateDateTextView()
     {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM, yyyy ");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE dd, MMMM yyyy ");
         mDate.setText(sdf.format(new Date()));
     }
 

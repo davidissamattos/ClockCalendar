@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_Title">Ajustes</string>
+    <string name="automatic_city">Ajuste automático de cidade</string>
+    <string name="automatic_city_summary">Baseado na localização do Wifi a cidade é determinada automaticamente</string>
+    <string name="cityId_textbox_Title">Escolha a cidade por Id</string>
+    <string name="cityId_dialog_Title">Digite o Id da cidade</string>
+    <string name="cityId_textbox_summary">Utilizando o Id do site provedor de tempo openweathermaps.com busque o Id da cidade</string>
+</resources>

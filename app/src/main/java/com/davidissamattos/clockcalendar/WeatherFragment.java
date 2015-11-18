@@ -1,10 +1,17 @@
 package com.davidissamattos.clockcalendar;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.SuperscriptSpan;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -32,9 +39,10 @@ import org.json.JSONObject;
 public class WeatherFragment extends Fragment
 {
 
+    private final String PREFERENCES_CITY_ID = "cityId";
     private final String TAG = "WeatherFragment";
     private final String ApiKey = "b0847e9fd818ae4e2ed86b551eeca88d";
-    private String SaoPauloCityID = "3448439";
+    private String cityId = "3448439";
 
     //References
     private ImageView iconImageView;
@@ -59,19 +67,35 @@ public class WeatherFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+        Log.d(TAG, "onCreate called");
         super.onCreate(savedInstanceState);
+
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        getPreferences();
+        new FetchCurrentWeatherData().execute();
+        new FetchForecastWeatherData().execute();
+        Log.d(TAG, "OnResume called");
+
     }
 
     @Override
     public void onStop()
     {
         super.onStop();
-        stopRepeatingTask();
+        //stopRepeatingTask();
+        Log.d(TAG,"OnStop called");
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        Log.d(TAG,"onCreateView called");
         //Inflate a view with the resource, pass the parent view to configure, but do not attache to root (false-> add the view in the activity code)
         View v = inflater.inflate(R.layout.weather_fragment,container,false);
 
@@ -88,7 +112,37 @@ public class WeatherFragment extends Fragment
         rainTextView = (TextView) v.findViewById(R.id.rainInfo);
         humidityTextView = (TextView) v.findViewById(R.id.humidityInfo);
         cloudsTextView = (TextView) v.findViewById(R.id.cloudsInfo);
+
+        //Loading preferences content
+
+
+
         //Adding Listeners
+        temperatureTextView.setOnClickListener(
+                new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        new FetchCurrentWeatherData().execute();
+                        new FetchForecastWeatherData().execute();
+                    }
+                }
+        );
+
+        //Open city preferences pane preferences
+        cityNameTextView.setOnClickListener(
+                new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                        startActivity(intent);
+                    }
+                }
+        );
+
 
         //Setting the timer and the task
         mHandler = new Handler();
@@ -119,12 +173,22 @@ public class WeatherFragment extends Fragment
         mHandler.removeCallbacks(mFetchData);
     }
 
+    private void getPreferences()
+    {
+        //Get preferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String restoredText = prefs.getString(PREFERENCES_CITY_ID, null);
+        if (restoredText != null) {
+            cityId =restoredText;
+        }
+        Log.d(TAG, "City Id=" + cityId);
+    }
+
+
     public class getWeather
     {
         public String CurrentWeatherJSONString;
         public String ForecastWeatherJSONString;
-        private final String openweathermap_FORECAST_WEATHER_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?id="+SaoPauloCityID+"&units=metric&cnt=1&appid="+ ApiKey;
-        private final String openweathermap_CURRENT_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?units=metric&id=" + SaoPauloCityID + "&appid=" + ApiKey;
         private final String openweathermapIMAGES_URL = "http://openweathermap.org/img/w/";
 
         //Important tags to parse the JSON object
@@ -143,7 +207,7 @@ public class WeatherFragment extends Fragment
         private final String TAG_MIN = "min";
         private final String TAG_HUMIDITY = "humidity";
         private final String TAG_ICON = "icon";
-        private final String TAG_RAIN = "Rain";
+        private final String TAG_RAIN = "rain";
         private final String TAG_ALL = "all";
         private final String TAG_3H = "3h";
         private final String TAG_SPEED = "speed";
@@ -174,8 +238,9 @@ public class WeatherFragment extends Fragment
 
 
 
-        public void getForecastWeatherJSON() throws IOException
+        public void getForecastWeatherJSON(String cityID) throws IOException
         {
+            final String openweathermap_FORECAST_WEATHER_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?id="+cityID+"&units=metric&cnt=1&appid="+ ApiKey;
             Log.d(TAG,"Preparing to get data");
             String JSONWeather = "";
             URL url = new URL(openweathermap_FORECAST_WEATHER_URL);
@@ -224,8 +289,9 @@ public class WeatherFragment extends Fragment
             }
         }
 
-        public void getCurrentWeatherJSON() throws IOException
+        public void getCurrentWeatherJSON(String cityID) throws IOException
         {
+            final String openweathermap_CURRENT_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?units=metric&id=" + cityID + "&appid=" + ApiKey;
             Log.d(TAG,"Preparing to get data");
             String JSONWeather = "";
             URL url = new URL(openweathermap_CURRENT_WEATHER_URL);
@@ -332,10 +398,11 @@ public class WeatherFragment extends Fragment
                 {
                     //JSON RAIN
                     JSONObject rain = jsonObject.getJSONObject(TAG_RAIN);
-                    rain3h = rain.getString(TAG_3H);
+                    rain3h = String.format("%.3f", rain.getDouble(TAG_3H));
                 }
                 catch (JSONException e)
                 {
+                    Log.d(TAG,"No rain");
                     rain3h = getActivity().getString(R.string.no_information);
                 }
 
@@ -400,7 +467,7 @@ public class WeatherFragment extends Fragment
         {
             try
             {
-                weather.getCurrentWeatherJSON();
+                weather.getCurrentWeatherJSON(cityId);
                 weather.parseCurrentWeatherJSON();
                 weather.getCurrentWeatherImage();
                 //Log.d(TAG,weather.CurrentWeatherJSONString);
@@ -425,14 +492,14 @@ public class WeatherFragment extends Fragment
             //Row 1
             cloudsTextView.setText(weather.cloudiness + " %");
             //Row 2
-            rainTextView.setText(weather.rain3h);
+            rainTextView.setText(Html.fromHtml(weather.rain3h + " " + "m<sup><small>3</small></sup>"));
             humidityTextView.setText(weather.humidity + " %");
             //Row 3
             sunriseTextView.setText(weather.sunrise);
             sunsetTextView.setText(weather.sunset);
             //Row 4
             windTextView.setText(weather.windSpeed + " m/s \n" + weather.windDeg + "\u00B0");
-            pressureTextView.setText(weather.pressure + " kPa");
+            pressureTextView.setText(weather.pressure + " hpa");
         }
 
 
@@ -448,7 +515,7 @@ public class WeatherFragment extends Fragment
         {
             try
             {
-                weather.getForecastWeatherJSON();
+                weather.getForecastWeatherJSON(cityId);
                 weather.parseForecastWeatherJSON();
             }
             catch (Throwable e)
