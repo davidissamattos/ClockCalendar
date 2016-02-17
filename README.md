@@ -5,3 +5,10 @@ This repository contains the Android code for a Wall Clock using a 800x600 Andro
 It is pretty fun and a good gift!!
 
 
+Some pics!!
+![alt tag](https://github.com/davidissamattos/ClockCalendar/blob/master/photo1.png)
+
+![alt tag](https://github.com/davidissamattos/ClockCalendar/blob/master/photo2.png)
+
+
+
